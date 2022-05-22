@@ -117,9 +117,6 @@ public class Compiler {
                 else{
                     try{
                         int immediate = Integer.parseInt(args[2]);
-                        if(immediate > 262143){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 262143");
-                        }
                         int opcode = 3;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = 0;
@@ -144,9 +141,6 @@ public class Compiler {
                 else{
                     try{
                         int immediate = Integer.parseInt(args[3]);
-                        if(immediate > 262143){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 262143");
-                        }
                         int opcode = 4;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
@@ -191,9 +185,6 @@ public class Compiler {
                 else{
                     try{
                         int immediate = Integer.parseInt(args[3]);
-                        if(immediate > 262143){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 262143");
-                        }
                         int opcode = 6;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
@@ -212,9 +203,6 @@ public class Compiler {
                 else{
                     try{
                         int address = Integer.parseInt(args[1]);
-                        if(address > 268435455){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 268435455");
-                        }
                         int opcode = 7;
                         int instruction = (opcode << 28) + address;
                         RAM.addInstruction(instruction);
@@ -237,9 +225,6 @@ public class Compiler {
                 else{
                     try{
                         int shiftAmount = Integer.parseInt(args[3]);
-                        if(shiftAmount > 8191){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 8191");
-                        }
                         int opcode = 8;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
@@ -265,9 +250,6 @@ public class Compiler {
                 else{
                     try{
                         int shiftAmount = Integer.parseInt(args[3]);
-                        if(shiftAmount > 8191){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 8191");
-                        }
                         int opcode = 9;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
@@ -293,9 +275,6 @@ public class Compiler {
                 else{
                     try{
                         int immediate = Integer.parseInt(args[3]);
-                        if(immediate > 262143){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 262143");
-                        }
                         int opcode = 10;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
@@ -320,9 +299,6 @@ public class Compiler {
                 else{
                     try{
                         int immediate = Integer.parseInt(args[3]);
-                        if(immediate > 262143){
-                            throw new SimulatorSyntaxException("Very large number, please enter a number between 0 and 262143");
-                        }
                         int opcode = 11;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
