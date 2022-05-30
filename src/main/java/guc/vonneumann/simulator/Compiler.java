@@ -61,7 +61,7 @@ public class Compiler {
                     int r3 = Integer.parseInt(args[3].substring(1));
                     int shamt = 0;
                     int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shamt;
-                    RAM.addInstruction(instruction);
+                    Computer.getRam().addInstruction(instruction);
                 }
                 break;
             case "SUB": 
@@ -81,7 +81,7 @@ public class Compiler {
                     int r3 = Integer.parseInt(args[3].substring(1));
                     int shamt = 0;
                     int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shamt;
-                    RAM.addInstruction(instruction); 
+                    Computer.getRam().addInstruction(instruction); 
                 }
                 break; 
             case "MUL": 
@@ -101,7 +101,7 @@ public class Compiler {
                     int r3 = Integer.parseInt(args[3].substring(1));
                     int shamt = 0;
                     int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shamt;
-                    RAM.addInstruction(instruction);
+                    Computer.getRam().addInstruction(instruction);
                 }
                 break; 
             case "MOVI": 
@@ -121,7 +121,7 @@ public class Compiler {
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = 0;
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -145,7 +145,7 @@ public class Compiler {
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }   
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -169,7 +169,7 @@ public class Compiler {
                     int r3 = Integer.parseInt(args[3].substring(1));
                     int shamt = 0;
                     int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shamt;
-                    RAM.addInstruction(instruction);
+                    Computer.getRam().addInstruction(instruction);
                 }
                 break;  
             case "XORI":
@@ -189,7 +189,7 @@ public class Compiler {
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -205,7 +205,7 @@ public class Compiler {
                         int address = Integer.parseInt(args[1]);
                         int opcode = 7;
                         int instruction = (opcode << 28) + address;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -230,7 +230,7 @@ public class Compiler {
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int r3 = 0;
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shiftAmount;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -255,7 +255,7 @@ public class Compiler {
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int r3 = 0;
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shiftAmount;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -279,7 +279,7 @@ public class Compiler {
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -303,7 +303,7 @@ public class Compiler {
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
-                        RAM.addInstruction(instruction);
+                        Computer.getRam().addInstruction(instruction);
                     }
                     catch(NumberFormatException e){
                         throw new SimulatorSyntaxException(e.getMessage());
