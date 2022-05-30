@@ -8,18 +8,16 @@ public class RAM {
     private int[] memory;
     private int instructionsSize;
     private int lastInstruction;
-    private int lastData;
 
     public RAM() {
         super();
         memory = new int[2048];
         instructionsSize = 1024;
         lastInstruction = -1;
-        lastData = 1023;
     }
 
     public void addInstruction(int instruction) throws SimulatorSyntaxException{
-        if(instructionsSize - 1 >= lastInstruction){
+        if(lastInstruction >= instructionsSize - 1){
             throw new SimulatorSyntaxException("RAM overflow");
         }    
         memory[++lastInstruction] = instruction;   
@@ -45,5 +43,6 @@ public class RAM {
         }
         return memory[address];
     }
+
 
 }

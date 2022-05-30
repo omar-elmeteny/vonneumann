@@ -2,29 +2,24 @@ package guc.vonneumann.simulator;
 
 public class Computer {
     
-    static private CPU cpu;
-    static private RAM ram;
-
-    public Computer() {
-        super();
-        setCpu(new CPU());
-        setRam(new RAM());
-    }
+    final static private CPU cpu = new CPU();
+    final static private RAM ram = new RAM();
 
     public static RAM getRam() {
         return ram;
-    }
-
-    public static void setRam(RAM ram) {
-        Computer.ram = ram;
     }
 
     public static CPU getCpu() {
         return cpu;
     }
 
-    public static void setCpu(CPU cpu) {
-        Computer.cpu = cpu;
+    public static int readRegister(int index) {
+        int value = cpu.getRegisterFile()[index];
+        return value;
+    }
+
+    public static void writeRegister(int index, int value) {
+        cpu.getRegisterFile()[index] = value;
     }
     
 }

@@ -4,15 +4,15 @@ import guc.vonneumann.simulator.Computer;
 
 public class MUL implements Instruction{
     final private int r1;
-    final private int r2;
-    final private int r3;
+    final private int r2Value;
+    final private int r3Value;
     private int product;
 
     public MUL(int r1, int r2, int r3) {
         super();
         this.r1 = r1;
-        this.r2 = r2;
-        this.r3 = r3;
+        this.r2Value = Computer.readRegister(r2);
+        this.r3Value = Computer.readRegister(r3);
     }
 
     public int getProduct() {
@@ -24,11 +24,11 @@ public class MUL implements Instruction{
     }
 
     public int getR3() {
-        return r3;
+        return r3Value;
     }
 
-    public int getR2() {
-        return r2;
+    public int getR2Value() {
+        return r2Value;
     }
 
     public int getR1() {
@@ -36,7 +36,7 @@ public class MUL implements Instruction{
     }
 
     public void execute(){
-        setProduct(r2 * r3);
+        setProduct(r2Value * r3Value);
     }
 
     public void memAccess(){
@@ -44,6 +44,6 @@ public class MUL implements Instruction{
     }
 
     public void writeBack(){
-        Computer.getCpu().getRegisterFile()[r1] = product;
+        Computer.writeRegister(r1, product);
     }
 }

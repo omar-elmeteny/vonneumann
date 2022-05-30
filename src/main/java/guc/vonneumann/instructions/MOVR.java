@@ -5,14 +5,14 @@ import guc.vonneumann.simulator.Computer;
 
 public class MOVR implements Instruction{
     final private int r1;
-    final private int r2;
+    final private int r2Value;
     final private int imm;
     private int load;
 
     public MOVR(int r1, int r2, int imm) {
         super();
         this.r1 = r1;
-        this.r2 = r2;
+        this.r2Value = Computer.readRegister(r2);
         this.imm = imm;
     }
 
@@ -32,8 +32,8 @@ public class MOVR implements Instruction{
         return r1;
     }
 
-    public int getR2() {
-        return r1;
+    public int getR2Value() {
+        return r2Value;
     }
 
     public void execute(){
@@ -41,10 +41,10 @@ public class MOVR implements Instruction{
     }
 
     public void memAccess() throws SimulatorRuntimeException{
-        load = Computer.getRam().readFromMemory(r2 + imm);
+        load = Computer.getRam().readFromMemory(r2Value + imm);
     }
 
     public void writeBack(){
-        Computer.getCpu().getRegisterFile()[r1] = load;
+        Computer.writeRegister(r1, load);
     }
 }

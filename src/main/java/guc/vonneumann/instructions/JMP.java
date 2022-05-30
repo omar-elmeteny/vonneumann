@@ -17,7 +17,6 @@ public class JMP implements Instruction{
     public void execute(){
         int pc = Computer.getCpu().getPc();
         pc = pc & 0xf0000000;
-        pc = pc >>> 28;
         Computer.getCpu().setPc(pc | address);
     }
 

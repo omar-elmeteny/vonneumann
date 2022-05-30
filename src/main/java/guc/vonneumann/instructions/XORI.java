@@ -4,14 +4,14 @@ import guc.vonneumann.simulator.Computer;
 
 public class XORI implements Instruction{
     final private int r1;
-    final private int r2;
+    final private int r2Value;
     final private int imm;
     private int xor;
 
     public XORI(int r1, int r2, int imm) {
         super();
         this.r1 = r1;
-        this.r2 = r2;
+        this.r2Value = Computer.readRegister(r2);
         this.imm = imm;
     }
 
@@ -31,12 +31,12 @@ public class XORI implements Instruction{
         return r1;
     }
 
-    public int getR2() {
-        return r1;
+    public int getR2Value() {
+        return r2Value;
     }
 
     public void execute(){
-        setXor(r2 ^ imm);
+        setXor(r2Value ^ imm);
     }
 
     public void memAccess(){
@@ -44,6 +44,6 @@ public class XORI implements Instruction{
     }
 
     public void writeBack(){
-        Computer.getCpu().getRegisterFile()[r1] = xor;
+        Computer.writeRegister(r1, xor);
     }
 }

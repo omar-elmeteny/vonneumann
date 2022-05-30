@@ -6,10 +6,21 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch App",
+            "name": "one_plus_two",
             "request": "launch",
             "mainClass": "guc.vonneumann.App",
-            "projectName": "vonneumann"
+            "projectName": "vonneumann",
+            "args": ["programs/one_plus_two.txt"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "one_plus_three",
+            "request": "launch",
+            "mainClass": "guc.vonneumann.App",
+            "projectName": "vonneumann",
+            "args": ["programs/one_plus_two.txt"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

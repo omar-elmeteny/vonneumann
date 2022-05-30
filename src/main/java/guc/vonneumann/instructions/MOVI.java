@@ -29,6 +29,6 @@ public class MOVI implements Instruction{
     }
 
     public void writeBack(){
-        Computer.getCpu().getRegisterFile()[r1] = imm;
+        Computer.writeRegister(r1, imm);
     }
 }

@@ -4,14 +4,14 @@ import guc.vonneumann.exceptions.SimulatorRuntimeException;
 import guc.vonneumann.simulator.Computer;
 
 public class MOVM implements Instruction{
-    final private int r1;
-    final private int r2;
+    final private int r1Value;
+    final private int r2Value;
     final private int imm;
 
     public MOVM(int r1, int r2, int imm) {
         super();
-        this.r1 = r1;
-        this.r2 = r2;
+        this.r1Value = Computer.readRegister(r1);
+        this.r2Value = Computer.readRegister(r2);
         this.imm = imm;
     }
 
@@ -20,11 +20,11 @@ public class MOVM implements Instruction{
     }
 
     public int getR1() {
-        return r1;
+        return r1Value;
     }
 
     public int getR2() {
-        return r1;
+        return r2Value;
     }
 
     public void execute(){
@@ -32,7 +32,7 @@ public class MOVM implements Instruction{
     }
 
     public void memAccess() throws SimulatorRuntimeException{
-        Computer.getRam().writeToMemory(r1, r2 + imm);
+        Computer.getRam().writeToMemory(r1Value, r2Value + imm);
     }
 
     public void writeBack(){

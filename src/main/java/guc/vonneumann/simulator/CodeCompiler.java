@@ -11,9 +11,9 @@ import guc.vonneumann.exceptions.SimulatorSyntaxException;
 /**
  * Compiler
  */
-public class Compiler {
+public class CodeCompiler {
 
-    public static ArrayList<String> readCode(String pathname) throws IOException{
+    private static ArrayList<String> readCode(String pathname) throws IOException{
         File file = new File(pathname);
         BufferedReader br = new BufferedReader(new FileReader(file));
         ArrayList<String> code = new ArrayList<>();
@@ -37,7 +37,7 @@ public class Compiler {
         }
     }
 
-    public static void compileLine(String line) throws SimulatorSyntaxException{
+    private static void compileLine(String line) throws SimulatorSyntaxException{
         line = line.trim();
         String[] args = line.split("\\s+");
         if(args.length == 0){

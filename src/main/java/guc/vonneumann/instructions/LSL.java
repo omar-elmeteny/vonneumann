@@ -4,14 +4,14 @@ import guc.vonneumann.simulator.Computer;
 
 public class LSL implements Instruction{
     final private int r1;
-    final private int r2;
+    final private int r2Value;
     final private int shamt;
     private int shiftLeft;
 
     public LSL(int r1, int r2, int shamt) {
         super();
         this.r1 = r1;
-        this.r2 = r2;
+        this.r2Value = Computer.readRegister(r2);
         this.shamt = shamt;
     }
 
@@ -19,7 +19,7 @@ public class LSL implements Instruction{
         return shiftLeft;
     }
 
-    public void setSum(int shiftLeft) {
+    public void setShiftLeft(int shiftLeft) {
         this.shiftLeft = shiftLeft;
     }
 
@@ -27,8 +27,8 @@ public class LSL implements Instruction{
         return shamt;
     }
 
-    public int getR2() {
-        return r2;
+    public int getR2Value() {
+        return r2Value;
     }
 
     public int getR1() {
@@ -36,7 +36,7 @@ public class LSL implements Instruction{
     }
 
     public void execute(){
-        setSum(r2 << shamt);
+        setShiftLeft(r2Value << shamt);
     }
 
     public void memAccess(){
@@ -44,6 +44,6 @@ public class LSL implements Instruction{
     }
 
     public void writeBack(){
-        Computer.getCpu().getRegisterFile()[r1] = shiftLeft;
+        Computer.writeRegister(r1, shiftLeft);
     }
 }

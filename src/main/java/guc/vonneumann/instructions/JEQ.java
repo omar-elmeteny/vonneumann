@@ -3,14 +3,14 @@ package guc.vonneumann.instructions;
 import guc.vonneumann.simulator.Computer;
 
 public class JEQ implements Instruction{
-    final private int r1;
-    final private int r2;
+    final private int r1Value;
+    final private int r2Value;
     final private int imm;
 
     public JEQ(int r1, int r2, int imm) {
         super();
-        this.r1 = r1;
-        this.r2 = r2;
+        this.r1Value = Computer.readRegister(r1);
+        this.r2Value = Computer.readRegister(r2);
         this.imm = imm;
     }
 
@@ -18,18 +18,18 @@ public class JEQ implements Instruction{
         return imm;
     }
 
-    public int getR2() {
-        return r2;
+    public int getR2Value() {
+        return r2Value;
     }
 
-    public int getR1() {
-        return r1;
+    public int getR1Value() {
+        return r1Value;
     }
 
     public void execute(){
-        if(r1 == r2){
+        if(r1Value == r2Value){
             int pc = Computer.getCpu().getPc();
-           Computer.getCpu().setPc(pc + imm - 1);
+            Computer.getCpu().setPc(pc + imm - 1);
         }
     }
 
