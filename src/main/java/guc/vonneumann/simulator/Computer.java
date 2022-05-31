@@ -1,5 +1,7 @@
 package guc.vonneumann.simulator;
 
+import guc.vonneumann.exceptions.SimulatorRuntimeException;
+
 public class Computer {
     
     final static private CPU cpu = new CPU();
@@ -22,4 +24,11 @@ public class Computer {
         cpu.getRegisterFile()[index] = value;
     }
     
+    public static int readMemory(int address) throws SimulatorRuntimeException{
+        return ram.readFromMemory(address);
+    }
+
+    public static void writeMemory(int address, int value) throws SimulatorRuntimeException{
+        ram.writeToMemory(value, address);
+    }
 }
