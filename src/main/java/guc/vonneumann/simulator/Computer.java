@@ -15,15 +15,6 @@ public class Computer {
         return cpu;
     }
 
-    public static int readRegister(int index) {
-        int value = cpu.getRegisterFile()[index];
-        return value;
-    }
-
-    public static void writeRegister(int index, int value) {
-        cpu.getRegisterFile()[index] = value;
-    }
-    
     public static int readMemory(int address) throws SimulatorRuntimeException{
         return ram.readFromMemory(address);
     }

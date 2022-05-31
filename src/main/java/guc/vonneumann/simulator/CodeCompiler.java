@@ -162,8 +162,27 @@ public class CodeCompiler {
                     }
                 }
                 break;
-            case OpCodes.JEQ:
             case OpCodes.MOVM:
+            case OpCodes.JEQ:
+                if (args.length != 4) {
+                    throw new SimulatorSyntaxException("Incorrect number of arguments");
+                } else if (!checkRegisterSyntax(args[1]) || !checkRegisterSyntax(args[2])) {
+                    throw new SimulatorSyntaxException("Incorrect register used");
+                } else if (!checkSourceRegisterNumber(args[1].substring(1))
+                        || !checkSourceRegisterNumber(args[2].substring(1))) {
+                    throw new SimulatorSyntaxException("Incorrect register used");
+                } else {
+                    try {
+                        int immediate = Integer.parseInt(args[3]);
+                        int r1 = Integer.parseInt(args[1].substring(1));
+                        int r2 = Integer.parseInt(args[2].substring(1));
+                        int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
+                        Computer.getRam().addInstruction(instruction);
+                    } catch (NumberFormatException e) {
+                        throw new SimulatorSyntaxException(e.getMessage());
+                    }
+                }
+                break;
             case OpCodes.MOVR:
             case OpCodes.XORI:
                 if (args.length != 4) {

@@ -61,6 +61,7 @@ public class CPU {
             return;
         }
         idexPipelineRegister = decode(ifidPipelineRegister);
+        ifidPipelineRegister = null;
     }
 
     public void execute() {
@@ -137,7 +138,7 @@ public class CPU {
             default:
                 break;
         }
-
+        idexPipelineRegister = null;
     }
 
     public void memAccess() throws SimulatorRuntimeException {
@@ -157,13 +158,15 @@ public class CPU {
             memwbPipelineRegister.setResult(exmemPipelineRegister.getResult());
             memwbPipelineRegister.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
         }
+        exmemPipelineRegister = null;
     }
 
     public void writeBack() {
         if (memwbPipelineRegister == null) {
             return;
         }
-        Computer.writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
+        writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
+        memwbPipelineRegister = null;
     }
 
     public int[] getRegisterFile() {
@@ -191,7 +194,7 @@ public class CPU {
                 int r2Value = readRegister(r2);
                 int r3 = instruction & 0x0003e000;
                 r3 = r3 >>> 13;
-                int r3Value = readRegister(r2);
+                int r3Value = readRegister(r3);
 
                 idexPipelineRegister.setDestinationRegister(r1);
                 idexPipelineRegister.setR2Value(r2Value);
@@ -266,6 +269,9 @@ public class CPU {
 
     public void setPc(int pc) {
         this.pc = pc;
+        ifidPipelineRegister = null;
+        idexPipelineRegister = null;
+        exmemPipelineRegister = null;
     }
 
     public int readRegister(int index) {
@@ -274,6 +280,10 @@ public class CPU {
     }
 
     public void writeRegister(int index, int value) {
+        if (index == -1) {
+            setPc(value);
+            return;
+        }
         registerFile[index] = value;
     }
 }

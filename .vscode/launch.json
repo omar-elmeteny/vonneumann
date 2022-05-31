@@ -15,11 +15,11 @@
         },
         {
             "type": "java",
-            "name": "one_plus_three",
+            "name": "table8",
             "request": "launch",
             "mainClass": "guc.vonneumann.App",
             "projectName": "vonneumann",
-            "args": ["programs/one_plus_two.txt"],
+            "args": ["programs/table8.txt"],
             "cwd": "${workspaceFolder}"
         }
     ]
