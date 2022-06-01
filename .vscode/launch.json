@@ -39,6 +39,24 @@
             "projectName": "vonneumann",
             "args": ["programs/test.txt"],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "sum1-10",
+            "request": "launch",
+            "mainClass": "guc.vonneumann.App",
+            "projectName": "vonneumann",
+            "args": ["programs/sum1-10.txt"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "fill mem",
+            "request": "launch",
+            "mainClass": "guc.vonneumann.App",
+            "projectName": "vonneumann",
+            "args": ["programs/fill-mem.txt"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
