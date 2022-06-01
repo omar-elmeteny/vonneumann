@@ -7,11 +7,6 @@ import guc.vonneumann.simulator.OpCodes;
 
 public class DisplayProgram {
     
-    static final private String initialColor = "#1591e1";
-    static final private String errorColor = "#ff0000";
-    static final private String valueColor = "#ffffff";
-    static final private String readColor = "#00ff00";
-    static final private String writeColor = "#ff00ff";
     static final private DisplayProgram instance = new DisplayProgram();
     final private ArrayList<DisplayCycle> cycles;
     private DisplayCycle currentCycle = null;
@@ -31,20 +26,26 @@ public class DisplayProgram {
     }
 
     public static void addInitialValue(String name, int value){
-        String html = String.format("<span style='font-weight: bold; color: %s'>%s:</span><span style='color: %s'>%d</span>",
-            initialColor, name, valueColor, value);
+        if (name == "Dest") {
+            String html = String.format("<span class='init'>%s: </span><span class='val'>%s</span>",
+            name, value == 0 ? "" : value == -1 ? "PC" : "R" + value);
+            instance.currentCycle.getCurrentPhase().addNewLine(html);
+            return;    
+        }
+        String html = String.format("<span class='init'>%s: </span><span class='val'>%d</span>",
+            name, value);
         instance.currentCycle.getCurrentPhase().addNewLine(html);
     }
 
     public static void addInitialValueOpCode(int value) throws SimulatorRuntimeException{
-        String html = String.format("<span style='font-weight: bold; color: %s'>%s:</span><span style='color: %s'>%d(%s)</span>",
-            initialColor, "OpCode", valueColor, value, getNameByOpCode(value));
+        String html = String.format("<span class='init'>%s: </span><span class='val'>%d(%s)</span>",
+            "OpCode", value, getNameByOpCode(value));
         instance.currentCycle.getCurrentPhase().addNewLine(html);
     }
 
     public static void addInitialValueHex(String name, int value){
-        String html = String.format("<span style='font-weight: bold; color: %s'>%s:</span><span style='color: %s'>0x%08x</span>",
-            initialColor, name, valueColor, value);
+        String html = String.format("<span class='init'>%s: </span><span class='val'>0x%08x</span>",
+            name, value);
         instance.currentCycle.getCurrentPhase().addNewLine(html);
     }
 
@@ -57,14 +58,20 @@ public class DisplayProgram {
     }
 
     public static void addRead(String name, int value){
-        String html = String.format("<span style='font-weight: bold; color: %s'>read %s:</span><span style='color: %s'>%d</span>",
-            readColor, name, valueColor, value);
+        String html = String.format("<span class='read'>read %s: </span><span class='val'>%d</span>",
+            name, value);
+        instance.currentCycle.getCurrentPhase().addNewLine(html);
+    }
+
+    public static void addReadHex(String name, int value){
+        String html = String.format("<span class='read'>read %s: </span><span class='val'>%08x</span>",
+            name, value);
         instance.currentCycle.getCurrentPhase().addNewLine(html);
     }
 
     public static void addWrite(String name, int oldValue, int newValue){
-        String html = String.format("<span style='font-weight: bold; color: %s'>write %s:</span><span style='color: %s'>%d -&gt; %d</span>",
-            writeColor, name, valueColor, oldValue, newValue);
+        String html = String.format("<span class='write'>write %s: </span><span class='val'>%d -&gt; %d</span>",
+            name, oldValue, newValue);
         instance.currentCycle.getCurrentPhase().addNewLine(html);
     }
 

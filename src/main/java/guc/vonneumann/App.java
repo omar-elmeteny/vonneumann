@@ -3,12 +3,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.awt.Desktop;
 
 import guc.vonneumann.exceptions.SimulatorRuntimeException;
 import guc.vonneumann.exceptions.SimulatorSyntaxException;
 import guc.vonneumann.simulator.*;
 import guc.vonneumann.view.DisplayProgram;
-import guc.vonneumann.view.DisplayWindow;
+import guc.vonneumann.view.DisplayHTML;
  
 
 /**
@@ -21,9 +22,9 @@ public class App
     {
         CodeCompiler.compileCode(args[0]);
         Computer.getCpu().runProgram();
-        String displayProgram = DisplayWindow.addDisplayProgram(DisplayProgram.getInstance());
-        String memory = DisplayWindow.addMemory(Computer.getRam().getMemory());
-        String registers = DisplayWindow.addRegisters(Computer.getCpu().getRegisterFile(), Computer.getCpu().getPc());
+        String displayProgram = DisplayHTML.addDisplayProgram(DisplayProgram.getInstance());
+        String memory = DisplayHTML.addMemory(Computer.getRam().getMemory());
+        String registers = DisplayHTML.addRegisters(Computer.getCpu().getRegisterFile(), Computer.getCpu().getPc());
         File file = new File("output/printings.html");
             try {
                 BufferedWriter br = new BufferedWriter(new FileWriter(file));
@@ -36,6 +37,7 @@ public class App
                 } finally {
                     br.close();
                 }
+                Desktop.getDesktop().browse(file.toURI());
             } catch (IOException e) {
 
             }

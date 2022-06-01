@@ -83,16 +83,32 @@ public class CPU {
             return;
         }
         DisplayProgram.setPhase("IF");
-        int pc = getPc();
-        int instruction = Computer.getRam().getInstruction(pc);
+
+        int currentPC = pc;
+        String name = "PC";
+        if (idexPipelineRegister != null && idexPipelineRegister.getNext() != null
+                && idexPipelineRegister.getNext().getDestinationRegister() == -1) {
+            name = "PC(FWD ID/EX)";
+            currentPC = idexPipelineRegister.getNext().getResult();
+        }
+
+        int instruction = Computer.getRam().getInstruction(currentPC);
+
         if (instruction == 0) {
+            if (this.pc != currentPC) {
+                this.pc = currentPC;
+                DisplayProgram.addRead(name, currentPC);
+                DisplayProgram.addReadHex("MEM[" + currentPC + "]", instruction);
+                DisplayProgram.addWrite("PC", currentPC, currentPC + 1);
+            }
             return;
         }
-        nextIFIDPipelineRegister = new IFIDPipelineRegister(pc, instruction);
+        DisplayProgram.addRead(name, currentPC);
+        DisplayProgram.addReadHex("MEM[" + currentPC + "]", instruction);
+        nextIFIDPipelineRegister = new IFIDPipelineRegister(currentPC, instruction);
         nextIFIDPipelineRegisterSet = true;
-        pc++;
-        this.pc = pc;
-        DisplayProgram.addWrite("PC", pc - 1, pc);
+        this.pc = currentPC + 1;
+        DisplayProgram.addWrite("PC", currentPC, currentPC + 1);
     }
 
     public void decode() throws SimulatorRuntimeException {
@@ -206,8 +222,8 @@ public class CPU {
                 next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
                 break;
             case OpCodes.MOVM:
-                next.setResult(idexPipelineRegister.getR3Value());
-                next.setAddress(idexPipelineRegister.getR2Value() + idexPipelineRegister.getImmediate());
+                next.setResult(idexPipelineRegister.getR2Value());
+                next.setAddress(idexPipelineRegister.getR3Value() + idexPipelineRegister.getImmediate());
                 next.setWriteMem(true);
                 break;
             default:
@@ -228,16 +244,14 @@ public class CPU {
         DisplayProgram.addInitialValueHex("ADDR", exmemPipelineRegister.getAddress());
         DisplayProgram.addInitialValue("Res", exmemPipelineRegister.getResult());
         DisplayProgram.addInitialValue("Dest", exmemPipelineRegister.getDestinationRegister());
-        MEMWBPipelineRegister next = null;
+        MEMWBPipelineRegister next = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
         if (exmemPipelineRegister.isReadMem()) {
             int value = Computer.readMemory(exmemPipelineRegister.getAddress());
-            next = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
             next.setResult(value);
             next.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
         } else if (exmemPipelineRegister.isWriteMem()) {
             Computer.writeMemory(exmemPipelineRegister.getAddress(), exmemPipelineRegister.getResult());
         } else if (exmemPipelineRegister.isWriteBack()) {
-            next = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
             next.setResult(exmemPipelineRegister.getResult());
             next.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
         }
@@ -257,7 +271,9 @@ public class CPU {
         DisplayProgram.addInitialValue("PC", memwbPipelineRegister.getPc());
         DisplayProgram.addInitialValue("Res", memwbPipelineRegister.getResult());
         DisplayProgram.addInitialValue("Dest", memwbPipelineRegister.getDestinationRegister());
-        writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
+        if (memwbPipelineRegister.getDestinationRegister() != 0) {
+            writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
+        }
         if (!nextMEMWBPipelineRegisterSet) {
             nextMEMWBPipelineRegister = null;
             nextMEMWBPipelineRegisterSet = true;
@@ -332,8 +348,8 @@ public class CPU {
                 r2 = r2 >>> 18;
                 int r2Value = readRegister(r2);
 
-                next.setR3Value(r1Value);
-                next.setR2Value(r2Value);
+                next.setR2Value(r1Value);
+                next.setR3Value(r2Value);
 
                 int immediate = instruction & 0x0003ffff;
                 int msb = immediate >>> 17;
@@ -358,53 +374,45 @@ public class CPU {
         return next;
     }
 
-    public int getPc() {
-        int result = pc;
-        String name = "PC";
-        if(exmemPipelineRegister != null && exmemPipelineRegister.getDestinationRegister() == -1){
-            result = exmemPipelineRegister.getResult();
-            name = "PC(FWD EX/MEM)";
+    public void clearNextMem(int pc) {
+        if (nextEXMEMPipelineRegister != null) {
+            nextEXMEMPipelineRegister = new EXMEMPipelineRegister(nextEXMEMPipelineRegister.getPc());
+        } else if (exmemPipelineRegister != null) {
+            nextEXMEMPipelineRegister = new EXMEMPipelineRegister(exmemPipelineRegister.getPc());
         }
-        else if(memwbPipelineRegister != null && memwbPipelineRegister.getDestinationRegister() == -1){
-            result = memwbPipelineRegister.getResult();
-            name = "PC(FWD MEM/WB)";
-        }
-        DisplayProgram.addRead(name, result);
-        return result;
-    }
-
-    public void setPc(int pc) {
-        nextIDEXPipelineRegister = null;
-        nextIDEXPipelineRegisterSet = true;
-        nextEXMEMPipelineRegister = null;
         nextEXMEMPipelineRegisterSet = true;
     }
 
     public int readRegister(int index) {
         int value = registerFile[index];
         String name = "R" + index;
-        if(idexPipelineRegister != null && idexPipelineRegister.getNext() != null && idexPipelineRegister.getNext().getDestinationRegister() == index){
-            name = name + "(FWD ID/EX)";
-            value = idexPipelineRegister.getNext().getResult();
+        if (index != 0) {
+            if (idexPipelineRegister != null && idexPipelineRegister.getNext() != null
+                    && idexPipelineRegister.getNext().getDestinationRegister() == index) {
+                name = name + "(FWD ID/EX)";
+                value = idexPipelineRegister.getNext().getResult();
+            } else if (exmemPipelineRegister != null && exmemPipelineRegister.getDestinationRegister() == index) {
+                name = name + "(FWD EX/MEM)";
+                value = exmemPipelineRegister.getResult();
+            } else if (memwbPipelineRegister != null && memwbPipelineRegister.getDestinationRegister() == index) {
+                name = name + "(FWD MEM/WB)";
+                value = memwbPipelineRegister.getResult();
+            }
         }
-        else if(exmemPipelineRegister != null && exmemPipelineRegister.getDestinationRegister() == index){
-            name = name + "(FWD EX/MEM)";
-            value = exmemPipelineRegister.getResult();
-        }
-        else if(memwbPipelineRegister != null && memwbPipelineRegister.getDestinationRegister() == index){
-            name = name + "(FWD MEM/WB)";
-            value = memwbPipelineRegister.getResult();
-        }
-        DisplayProgram.addRead(name , value);
+        DisplayProgram.addRead(name, value);
         return value;
     }
 
     public void writeRegister(int index, int value) {
         if (index == -1) {
-            setPc(value);
+            clearNextMem(value);
             return;
         }
         DisplayProgram.addWrite("R" + index, registerFile[index], value);
         registerFile[index] = value;
+    }
+
+    public int getPc() {
+        return this.pc;
     }
 }

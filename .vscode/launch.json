@@ -30,6 +30,15 @@
             "projectName": "vonneumann",
             "args": ["programs/movi.txt"],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "test",
+            "request": "launch",
+            "mainClass": "guc.vonneumann.App",
+            "projectName": "vonneumann",
+            "args": ["programs/test.txt"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

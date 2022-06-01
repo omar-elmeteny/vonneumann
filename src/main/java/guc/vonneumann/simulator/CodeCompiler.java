@@ -36,7 +36,11 @@ public class CodeCompiler {
             if(c.length() == 0){
                 continue;
             }
-            compileLine(c);
+            try {
+                compileLine(c);
+            } catch (NumberFormatException e) {
+                throw new SimulatorSyntaxException("Invalid number: " + e.getMessage());
+            }
         }
     }
 
