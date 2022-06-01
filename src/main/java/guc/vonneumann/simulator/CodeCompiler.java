@@ -108,7 +108,7 @@ public class CodeCompiler {
                     int r2 = Integer.parseInt(args[2].substring(1));
                     int r3 = Integer.parseInt(args[3].substring(1));
                     int shamt = 0;
-                    int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shamt;
+                    int instruction = (opcode << 28) | (r1 << 23) | (r2 << 18) | (r3 << 13) | shamt;
                     Computer.getRam().addInstruction(instruction);
                 }
                 break;
@@ -121,10 +121,10 @@ public class CodeCompiler {
                     throw new SimulatorSyntaxException("Incorrect register used");
                 } else {
                     try {
-                        int immediate = Integer.parseInt(args[2]);
+                        int immediate = Integer.parseInt(args[2]) & 0x0003ffff;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = 0;
-                        int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
+                        int instruction = (opcode << 28) | (r1 << 23) | (r2 << 18) | immediate;
                         Computer.getRam().addInstruction(instruction);
                     } catch (NumberFormatException e) {
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -136,8 +136,8 @@ public class CodeCompiler {
                     throw new SimulatorSyntaxException("Incorrect number of arguments");
                 } else {
                     try {
-                        int address = Integer.parseInt(args[1]);
-                        int instruction = (opcode << 28) + address;
+                        int address = Integer.parseInt(args[1]) & 0x0fffffff;
+                        int instruction = (opcode << 28) | address;
                         Computer.getRam().addInstruction(instruction);
                     } catch (NumberFormatException e) {
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -155,11 +155,11 @@ public class CodeCompiler {
                     throw new SimulatorSyntaxException("Incorrect register used");
                 } else {
                     try {
-                        int shiftAmount = Integer.parseInt(args[3]);
+                        int shiftAmount = Integer.parseInt(args[3]) & 0x00001fff;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
                         int r3 = 0;
-                        int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + (r3 << 13) + shiftAmount;
+                        int instruction = (opcode << 28) | (r1 << 23) | (r2 << 18) | (r3 << 13) | shiftAmount;
                         Computer.getRam().addInstruction(instruction);
                     } catch (NumberFormatException e) {
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -177,10 +177,10 @@ public class CodeCompiler {
                     throw new SimulatorSyntaxException("Incorrect register used");
                 } else {
                     try {
-                        int immediate = Integer.parseInt(args[3]);
+                        int immediate = Integer.parseInt(args[3]) & 0x0003ffff;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
-                        int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
+                        int instruction = (opcode << 28) | (r1 << 23) | (r2 << 18) | immediate;
                         Computer.getRam().addInstruction(instruction);
                     } catch (NumberFormatException e) {
                         throw new SimulatorSyntaxException(e.getMessage());
@@ -198,10 +198,10 @@ public class CodeCompiler {
                     throw new SimulatorSyntaxException("Incorrect register used");
                 } else {
                     try {
-                        int immediate = Integer.parseInt(args[3]);
+                        int immediate = Integer.parseInt(args[3]) & 0x0003ffff;
                         int r1 = Integer.parseInt(args[1].substring(1));
                         int r2 = Integer.parseInt(args[2].substring(1));
-                        int instruction = (opcode << 28) + (r1 << 23) + (r2 << 18) + immediate;
+                        int instruction = (opcode << 28) | (r1 << 23) | (r2 << 18) | immediate;
                         Computer.getRam().addInstruction(instruction);
                     } catch (NumberFormatException e) {
                         throw new SimulatorSyntaxException(e.getMessage());

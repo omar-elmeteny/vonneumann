@@ -1,11 +1,15 @@
 package guc.vonneumann;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.io.FileWriter;
 
 import guc.vonneumann.exceptions.SimulatorRuntimeException;
 import guc.vonneumann.exceptions.SimulatorSyntaxException;
 import guc.vonneumann.simulator.*;
 import guc.vonneumann.view.DisplayProgram;
 import guc.vonneumann.view.DisplayWindow;
+ 
 
 /**
  * Hello world!
@@ -17,8 +21,23 @@ public class App
     {
         CodeCompiler.compileCode(args[0]);
         Computer.getCpu().runProgram();
-        DisplayWindow.addDisplayProgram(DisplayProgram.getInstance());
-        DisplayWindow.addMemory(Computer.getRam().getMemory());
-        DisplayWindow.addRegisters(Computer.getCpu().getRegisterFile(), Computer.getCpu().getPc());
+        String displayProgram = DisplayWindow.addDisplayProgram(DisplayProgram.getInstance());
+        String memory = DisplayWindow.addMemory(Computer.getRam().getMemory());
+        String registers = DisplayWindow.addRegisters(Computer.getCpu().getRegisterFile(), Computer.getCpu().getPc());
+        File file = new File("output/printings.html");
+            try {
+                BufferedWriter br = new BufferedWriter(new FileWriter(file));
+                try {
+                    br.write("<html><head><title>CPU Simulator</title><link href='printings.css' rel='stylesheet'/></head><body>");
+                    br.write(displayProgram);
+                    br.write(memory);
+                    br.write(registers);
+                    br.write("</body></html>");
+                } finally {
+                    br.close();
+                }
+            } catch (IOException e) {
+
+            }
     }
 }

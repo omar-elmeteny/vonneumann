@@ -1,0 +1,26 @@
+table{
+    margin:20px 10px;
+    width:calc(100% - 40px);
+    font-family: 'Courier New', Courier, monospace;
+    border: white 1px solid;
+    border-collapse: collapse;
+}
+body{
+    background-color: #0D1117;
+    color: white;
+}
+th{
+    color: white;
+    text-align: center;
+    border: white 1px solid;
+}
+td{
+    border: white 1px solid;
+}
+td:first-child{
+    text-align: center;
+    color: white;
+}
+tr:nth-child(2n+1){
+    background-color: #222222;
+}

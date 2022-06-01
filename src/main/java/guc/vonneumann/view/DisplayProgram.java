@@ -109,4 +109,8 @@ public class DisplayProgram {
         throw new SimulatorRuntimeException("There is no such instruction (" + opcode + ")");
 
     }
+
+    public static void setPhaseCycles(int cycles){
+        instance.currentCycle.getCurrentPhase().setCycles(cycles);
+    }
 }

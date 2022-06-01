@@ -8,11 +8,20 @@ public class IDEXPipelineRegister {
     private int destinationRegister;
     private final int opCode;
     private int immediate;
+    private EXMEMPipelineRegister next;
     
     public IDEXPipelineRegister(int pc, int opCode) {
         super();
         this.opCode = opCode;
         this.pc = pc;
+    }
+
+    public EXMEMPipelineRegister getNext() {
+        return next;
+    }
+
+    public void setNext(EXMEMPipelineRegister next) {
+        this.next = next;
     }
 
     public int getOpCode() {

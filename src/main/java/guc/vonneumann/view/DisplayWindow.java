@@ -53,29 +53,25 @@ public class DisplayWindow extends JFrame{
         return mainWindow;
     }
 
-    public static void addDisplayProgram(DisplayProgram program){
+    public static String addDisplayProgram(DisplayProgram program){
         StringBuilder tableHTML = new StringBuilder();
-        tableHTML.append("<style>");
-        tableHTML.append("table{width:100%;border-spacing:0px;margin:20px;border-collapse:collapse;border:1px solid white;font-family:monospace;font-size:16px;}");
-        tableHTML.append("th{border:1px solid white;color:white;text-align:center;font-weight:bold;}");
-        tableHTML.append("td{border:1px solid white;color:white;padding:2px;}");
-        tableHTML.append("</style>");
-        tableHTML.append("<table cellpadding='2'>");
+        tableHTML.append("<table id='program'>");
         tableHTML.append("<tr><th>Cycle</th><th>IF</th><th>ID</th><th>EX</th><th>MEM</th><th>WB</th></tr>");
-        int counter = 1;
         for(DisplayCycle cycle : program.getCycles()){
-            if(counter%2 == 1){
-                tableHTML.append("<tr style='background-color:#222222;'>");
-            }
-            else{
-                tableHTML.append("<tr>");
-            }
-            counter++;
-            tableHTML.append("<td style='text-align:center;'>");
+            tableHTML.append("<tr>");
+            tableHTML.append("<td>");
             tableHTML.append(cycle.getCycleNumber());
             tableHTML.append("</td>");
             for(DisplayPhase phase : cycle.getPhases()){
-                tableHTML.append("<td>");
+                if(phase.getCycles() == 0){
+                    continue;
+                }
+                else if(phase.getCycles() > 1){
+                    tableHTML.append("<td rowspan='" + phase.getCycles() + "'>");
+                }
+                else{
+                    tableHTML.append("<td>");
+                }
                 for(String message : phase.getMessages()){
                     tableHTML.append(message);
                     tableHTML.append("<br/>");
@@ -85,24 +81,17 @@ public class DisplayWindow extends JFrame{
             tableHTML.append("</tr>");
         }
         tableHTML.append("</table>");
-        getMainWindow().addHTML(tableHTML.toString());
+        return tableHTML.toString();
     }
 
-    public static void addMemory(int[] memory){
+    public static String addMemory(int[] memory){
         StringBuilder tableHTML = new StringBuilder();
-        tableHTML.append("<h1 style='color:white;font-size:20px;font-family:serif;margin:20px;'>RAM</h1>");
-        tableHTML.append("<table cellpadding='2'>");
-        int counter = 1;
+        tableHTML.append("<h1>RAM</h1>");
+        tableHTML.append("<table id='memory'>");
         int cols = 8;
         for(int i = 0;i < memory.length;i+=cols){
-            if(counter%2 == 1){
-                tableHTML.append("<tr style='background-color:#222222;'>");
-            }
-            else{
-                tableHTML.append("<tr>");
-            }
-            counter++;
-            tableHTML.append("<td style='font-weight:bold;'>");
+            tableHTML.append("<tr>");
+            tableHTML.append("<td>");
             tableHTML.append(String.format("%d-%d", i, i + cols - 1));
             tableHTML.append("</td>");
             for(int j = 0;j < cols;j++){
@@ -113,25 +102,18 @@ public class DisplayWindow extends JFrame{
             tableHTML.append("</tr>");
         }
         tableHTML.append("</table>");
-        getMainWindow().addHTML(tableHTML.toString());
+        return tableHTML.toString();
     }
 
-    public static void addRegisters(int[] registers, int pc){
+    public static String addRegisters(int[] registers, int pc){
         StringBuilder tableHTML = new StringBuilder();
-        tableHTML.append("<h1 style='color:white;font-size:20px;font-family:serif;margin:20px;'>Registers</h1>");
-        tableHTML.append("<h1 style='color:white;font-size:16px;font-family:serif;margin-left:20px;'>PC: " + pc + "</h1>");
-        tableHTML.append("<table cellpadding='2'>");
-        int counter = 1;
+        tableHTML.append("<h1>Registers</h1>");
+        tableHTML.append("<h1>PC: " + pc + "</h1>");
+        tableHTML.append("<table id='registers'>");
         int cols = 8;
         for(int i = 0;i < registers.length;i+=cols){
-            if(counter%2 == 1){
-                tableHTML.append("<tr style='background-color:#222222;'>");
-            }
-            else{
-                tableHTML.append("<tr>");
-            }
-            counter++;
-            tableHTML.append("<td style='font-weight:bold;'>");
+            tableHTML.append("<tr>");
+            tableHTML.append("<td>");
             tableHTML.append(String.format("%d-%d", i, i + cols - 1));
             tableHTML.append("</td>");
             for(int j = 0;j < cols;j++){
@@ -142,7 +124,7 @@ public class DisplayWindow extends JFrame{
             tableHTML.append("</tr>");
         }
         tableHTML.append("</table>");
-        getMainWindow().addHTML(tableHTML.toString());
+        return tableHTML.toString();
     }
 
     public void addHTML(String html){

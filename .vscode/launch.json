@@ -21,6 +21,15 @@
             "projectName": "vonneumann",
             "args": ["programs/table8.txt"],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "movi",
+            "request": "launch",
+            "mainClass": "guc.vonneumann.App",
+            "projectName": "vonneumann",
+            "args": ["programs/movi.txt"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

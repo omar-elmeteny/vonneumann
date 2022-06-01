@@ -13,6 +13,16 @@ public class CPU {
     private EXMEMPipelineRegister exmemPipelineRegister;
     private MEMWBPipelineRegister memwbPipelineRegister;
 
+    private IFIDPipelineRegister nextIFIDPipelineRegister;
+    private IDEXPipelineRegister nextIDEXPipelineRegister;
+    private EXMEMPipelineRegister nextEXMEMPipelineRegister;
+    private MEMWBPipelineRegister nextMEMWBPipelineRegister;
+
+    private boolean nextIFIDPipelineRegisterSet;
+    private boolean nextIDEXPipelineRegisterSet;
+    private boolean nextEXMEMPipelineRegisterSet;
+    private boolean nextMEMWBPipelineRegisterSet;
+
     public CPU() {
         super();
         registerFile = new int[32];
@@ -29,31 +39,59 @@ public class CPU {
 
     public void runCycle() throws SimulatorRuntimeException {
         DisplayProgram.addCycle();
-        writeBack();
-        memAccess();
+        fetch();
         execute();
         decode();
-        fetch();
+        memAccess();
+        writeBack();
+
+        writePipelineRegisters();
+    }
+
+    private void writePipelineRegisters() {
+        if (nextIFIDPipelineRegisterSet) {
+            ifidPipelineRegister = nextIFIDPipelineRegister;
+        }
+        if (nextIDEXPipelineRegisterSet) {
+            idexPipelineRegister = nextIDEXPipelineRegister;
+        }
+        if (nextEXMEMPipelineRegisterSet) {
+            exmemPipelineRegister = nextEXMEMPipelineRegister;
+        }
+        if (nextMEMWBPipelineRegisterSet) {
+            memwbPipelineRegister = nextMEMWBPipelineRegister;
+        }
+
+        nextIFIDPipelineRegister = null;
+        nextIDEXPipelineRegister = null;
+        nextEXMEMPipelineRegister = null;
+        nextMEMWBPipelineRegister = null;
+        nextIFIDPipelineRegisterSet = false;
+        nextIDEXPipelineRegisterSet = false;
+        nextEXMEMPipelineRegisterSet = false;
+        nextMEMWBPipelineRegisterSet = false;
     }
 
     public boolean isDone() throws SimulatorRuntimeException {
         return (ifidPipelineRegister == null && idexPipelineRegister == null
-            && exmemPipelineRegister == null && memwbPipelineRegister == null
-            && Computer.getRam().getInstruction(pc) == 0);
+                && exmemPipelineRegister == null && memwbPipelineRegister == null
+                && Computer.getRam().getInstruction(pc) == 0);
     }
 
     public void fetch() throws SimulatorRuntimeException {
         if (clockCycles % 2 == 0) {
             return;
         }
+        DisplayProgram.setPhase("IF");
+        int pc = getPc();
         int instruction = Computer.getRam().getInstruction(pc);
         if (instruction == 0) {
             return;
         }
-        DisplayProgram.setPhase("IF");
-        DisplayProgram.addRead("PC", pc);
-        ifidPipelineRegister = new IFIDPipelineRegister(pc, instruction);
+        nextIFIDPipelineRegister = new IFIDPipelineRegister(pc, instruction);
+        nextIFIDPipelineRegisterSet = true;
         pc++;
+        this.pc = pc;
         DisplayProgram.addWrite("PC", pc - 1, pc);
     }
 
@@ -66,10 +104,22 @@ public class CPU {
             return;
         }
         DisplayProgram.setPhase("ID");
-        DisplayProgram.addInitialValue("PC", ifidPipelineRegister.getPc());
-        DisplayProgram.addInitialValueHex("Ins", ifidPipelineRegister.getInstruction());
-        idexPipelineRegister = decode(ifidPipelineRegister);
-        ifidPipelineRegister = null;
+        if (ifidPipelineRegister.getNext() == null) {
+            DisplayProgram.addInitialValue("PC", ifidPipelineRegister.getPc());
+            DisplayProgram.addInitialValueHex("Ins", ifidPipelineRegister.getInstruction());
+            ifidPipelineRegister.setNext(decode(ifidPipelineRegister));
+            DisplayProgram.setPhaseCycles(2);
+        } else {
+            nextIDEXPipelineRegister = ifidPipelineRegister.getNext();
+            nextIDEXPipelineRegisterSet = true;
+            if (!nextIFIDPipelineRegisterSet) {
+                nextIFIDPipelineRegister = null;
+                nextIFIDPipelineRegisterSet = true;
+            }
+
+            DisplayProgram.setPhaseCycles(0);
+        }
+
     }
 
     public void execute() throws SimulatorRuntimeException {
@@ -77,6 +127,16 @@ public class CPU {
             return;
         }
         DisplayProgram.setPhase("EX");
+        if (idexPipelineRegister.getNext() != null) {
+            nextEXMEMPipelineRegister = idexPipelineRegister.getNext();
+            nextEXMEMPipelineRegisterSet = true;
+            if (!nextIDEXPipelineRegisterSet) {
+                nextIDEXPipelineRegister = null;
+                nextIDEXPipelineRegisterSet = true;
+            }
+            DisplayProgram.setPhaseCycles(0);
+            return;
+        }
         DisplayProgram.addInitialValue("PC", idexPipelineRegister.getPc());
         DisplayProgram.addInitialValueOpCode(idexPipelineRegister.getOpCode());
         DisplayProgram.addInitialValue("R2", idexPipelineRegister.getR2Value());
@@ -85,75 +145,78 @@ public class CPU {
         DisplayProgram.addInitialValue("Dest", idexPipelineRegister.getDestinationRegister());
         int opCode = idexPipelineRegister.getOpCode();
         int pc = idexPipelineRegister.getPc();
-        exmemPipelineRegister = new EXMEMPipelineRegister(pc);
+        EXMEMPipelineRegister next = new EXMEMPipelineRegister(pc);
         switch (opCode) {
             case OpCodes.ADD:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() + idexPipelineRegister.getR3Value());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                next.setResult(idexPipelineRegister.getR2Value() + idexPipelineRegister.getR3Value());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
                 break;
             case OpCodes.SUB:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() - idexPipelineRegister.getR3Value());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                next.setResult(idexPipelineRegister.getR2Value() - idexPipelineRegister.getR3Value());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
                 break;
             case OpCodes.MUL:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() * idexPipelineRegister.getR3Value());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
-                break;  
+                next.setResult(idexPipelineRegister.getR2Value() * idexPipelineRegister.getR3Value());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                break;
             case OpCodes.MOVI:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
-                break; 
-            case OpCodes.JEQ: 
-                if(idexPipelineRegister.getR2Value() == idexPipelineRegister.getR3Value()){
-                    exmemPipelineRegister.setResult(idexPipelineRegister.getPc() + idexPipelineRegister.getImmediate() + 1);
-                    exmemPipelineRegister.setWriteBack(true);
-                    exmemPipelineRegister.setDestinationRegister(-1);
-                } 
+                next.setResult(idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                break;
+            case OpCodes.JEQ:
+                if (idexPipelineRegister.getR2Value() == idexPipelineRegister.getR3Value()) {
+                    next.setResult(idexPipelineRegister.getPc() + idexPipelineRegister.getImmediate() + 1);
+                    next.setWriteBack(true);
+                    next.setDestinationRegister(-1);
+                }
                 break;
             case OpCodes.AND:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() & idexPipelineRegister.getR3Value());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
-                break;  
-            case OpCodes.XORI:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() ^ idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                next.setResult(idexPipelineRegister.getR2Value() & idexPipelineRegister.getR3Value());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
                 break;
-            case OpCodes.JMP: 
-                exmemPipelineRegister.setResult((idexPipelineRegister.getPc() & 0xf0000000) | idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(-1);
+            case OpCodes.XORI:
+                next.setResult(idexPipelineRegister.getR2Value() ^ idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                break;
+            case OpCodes.JMP:
+                next.setResult((idexPipelineRegister.getPc() & 0xf0000000) | idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setDestinationRegister(-1);
                 break;
             case OpCodes.LSL:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() << idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                next.setResult(idexPipelineRegister.getR2Value() << idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
                 break;
             case OpCodes.LSR:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR2Value() >>> idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
-                break; 
+                next.setResult(idexPipelineRegister.getR2Value() >>> idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                break;
             case OpCodes.MOVR:
-                exmemPipelineRegister.setAddress(idexPipelineRegister.getR2Value() + idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteBack(true);
-                exmemPipelineRegister.setReadMem(true);
-                exmemPipelineRegister.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
-                break; 
+                next.setAddress(idexPipelineRegister.getR2Value() + idexPipelineRegister.getImmediate());
+                next.setWriteBack(true);
+                next.setReadMem(true);
+                next.setDestinationRegister(idexPipelineRegister.getDestinationRegister());
+                break;
             case OpCodes.MOVM:
-                exmemPipelineRegister.setResult(idexPipelineRegister.getR3Value());
-                exmemPipelineRegister.setAddress(idexPipelineRegister.getR2Value() + idexPipelineRegister.getImmediate());
-                exmemPipelineRegister.setWriteMem(true);
-                break;                   
+                next.setResult(idexPipelineRegister.getR3Value());
+                next.setAddress(idexPipelineRegister.getR2Value() + idexPipelineRegister.getImmediate());
+                next.setWriteMem(true);
+                break;
             default:
                 break;
         }
-        idexPipelineRegister = null;
+        idexPipelineRegister.setNext(next);
+        DisplayProgram.setPhaseCycles(2);
+        nextIDEXPipelineRegister = idexPipelineRegister;
+        nextIDEXPipelineRegisterSet = true;
     }
 
     public void memAccess() throws SimulatorRuntimeException {
@@ -165,20 +228,25 @@ public class CPU {
         DisplayProgram.addInitialValueHex("ADDR", exmemPipelineRegister.getAddress());
         DisplayProgram.addInitialValue("Res", exmemPipelineRegister.getResult());
         DisplayProgram.addInitialValue("Dest", exmemPipelineRegister.getDestinationRegister());
+        MEMWBPipelineRegister next = null;
         if (exmemPipelineRegister.isReadMem()) {
             int value = Computer.readMemory(exmemPipelineRegister.getAddress());
-            memwbPipelineRegister = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
-            memwbPipelineRegister.setResult(value);
-            memwbPipelineRegister.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
+            next = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
+            next.setResult(value);
+            next.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
         } else if (exmemPipelineRegister.isWriteMem()) {
             Computer.writeMemory(exmemPipelineRegister.getAddress(), exmemPipelineRegister.getResult());
-            memwbPipelineRegister = null;
         } else if (exmemPipelineRegister.isWriteBack()) {
-            memwbPipelineRegister = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
-            memwbPipelineRegister.setResult(exmemPipelineRegister.getResult());
-            memwbPipelineRegister.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
+            next = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
+            next.setResult(exmemPipelineRegister.getResult());
+            next.setDestinationRegister(exmemPipelineRegister.getDestinationRegister());
         }
-        exmemPipelineRegister = null;
+        nextMEMWBPipelineRegister = next;
+        nextMEMWBPipelineRegisterSet = true;
+        if (!nextEXMEMPipelineRegisterSet) {
+            nextEXMEMPipelineRegister = null;
+            nextEXMEMPipelineRegisterSet = true;
+        }
     }
 
     public void writeBack() {
@@ -190,7 +258,10 @@ public class CPU {
         DisplayProgram.addInitialValue("Res", memwbPipelineRegister.getResult());
         DisplayProgram.addInitialValue("Dest", memwbPipelineRegister.getDestinationRegister());
         writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
-        memwbPipelineRegister = null;
+        if (!nextMEMWBPipelineRegisterSet) {
+            nextMEMWBPipelineRegister = null;
+            nextMEMWBPipelineRegisterSet = true;
+        }
     }
 
     public int[] getRegisterFile() {
@@ -202,7 +273,7 @@ public class CPU {
         int opCode = ifidPipelineRegister.getInstruction() & 0xf0000000;
         opCode = opCode >>> 28;
         int pc = ifidPipelineRegister.getPc();
-        IDEXPipelineRegister idexPipelineRegister = new IDEXPipelineRegister(pc, opCode);
+        IDEXPipelineRegister next = new IDEXPipelineRegister(pc, opCode);
         switch (opCode) {
             // R-Type
             case OpCodes.ADD:
@@ -220,16 +291,16 @@ public class CPU {
                 r3 = r3 >>> 13;
                 int r3Value = readRegister(r3);
 
-                idexPipelineRegister.setDestinationRegister(r1);
-                idexPipelineRegister.setR2Value(r2Value);
-                idexPipelineRegister.setR3Value(r3Value);
+                next.setDestinationRegister(r1);
+                next.setR2Value(r2Value);
+                next.setR3Value(r3Value);
 
                 int shamt = instruction & 0x00001fff;
                 int msb = shamt >>> 12;
                 if (msb == 1) {
                     shamt = shamt | 0xfffff000;
                 }
-                idexPipelineRegister.setImmediate(shamt);
+                next.setImmediate(shamt);
                 break;
             }
             case OpCodes.MOVI:
@@ -241,15 +312,15 @@ public class CPU {
                 r2 = r2 >>> 18;
                 int r2Value = readRegister(r2);
 
-                idexPipelineRegister.setDestinationRegister(r1);
-                idexPipelineRegister.setR2Value(r2Value);
+                next.setDestinationRegister(r1);
+                next.setR2Value(r2Value);
 
                 int immediate = instruction & 0x0003ffff;
                 int msb = immediate >>> 17;
                 if (msb == 1) {
                     immediate = immediate | 0xfffe0000;
                 }
-                idexPipelineRegister.setImmediate(immediate);
+                next.setImmediate(immediate);
                 break;
             }
             case OpCodes.JEQ:
@@ -261,15 +332,15 @@ public class CPU {
                 r2 = r2 >>> 18;
                 int r2Value = readRegister(r2);
 
-                idexPipelineRegister.setR3Value(r1Value);
-                idexPipelineRegister.setR2Value(r2Value);
+                next.setR3Value(r1Value);
+                next.setR2Value(r2Value);
 
                 int immediate = instruction & 0x0003ffff;
                 int msb = immediate >>> 17;
                 if (msb == 1) {
                     immediate = immediate | 0xfffe0000;
                 }
-                idexPipelineRegister.setImmediate(immediate);
+                next.setImmediate(immediate);
                 break;
             }
             case OpCodes.JMP: {
@@ -278,30 +349,53 @@ public class CPU {
                 if (msb == 1) {
                     immediate = immediate | 0xf8000000;
                 }
-                idexPipelineRegister.setImmediate(immediate);
+                next.setImmediate(immediate);
                 break;
             }
             default:
                 throw new SimulatorRuntimeException("Failed to decode instruction");
         }
-        return idexPipelineRegister;
+        return next;
     }
 
     public int getPc() {
-        return pc;
+        int result = pc;
+        String name = "PC";
+        if(exmemPipelineRegister != null && exmemPipelineRegister.getDestinationRegister() == -1){
+            result = exmemPipelineRegister.getResult();
+            name = "PC(FWD EX/MEM)";
+        }
+        else if(memwbPipelineRegister != null && memwbPipelineRegister.getDestinationRegister() == -1){
+            result = memwbPipelineRegister.getResult();
+            name = "PC(FWD MEM/WB)";
+        }
+        DisplayProgram.addRead(name, result);
+        return result;
     }
 
     public void setPc(int pc) {
-        DisplayProgram.addWrite("PC", this.pc, pc);
-        this.pc = pc;
-        ifidPipelineRegister = null;
-        idexPipelineRegister = null;
-        exmemPipelineRegister = null;
+        nextIDEXPipelineRegister = null;
+        nextIDEXPipelineRegisterSet = true;
+        nextEXMEMPipelineRegister = null;
+        nextEXMEMPipelineRegisterSet = true;
     }
 
     public int readRegister(int index) {
         int value = registerFile[index];
-        DisplayProgram.addRead("R" + index, value);
+        String name = "R" + index;
+        if(idexPipelineRegister != null && idexPipelineRegister.getNext() != null && idexPipelineRegister.getNext().getDestinationRegister() == index){
+            name = name + "(FWD ID/EX)";
+            value = idexPipelineRegister.getNext().getResult();
+        }
+        else if(exmemPipelineRegister != null && exmemPipelineRegister.getDestinationRegister() == index){
+            name = name + "(FWD EX/MEM)";
+            value = exmemPipelineRegister.getResult();
+        }
+        else if(memwbPipelineRegister != null && memwbPipelineRegister.getDestinationRegister() == index){
+            name = name + "(FWD MEM/WB)";
+            value = memwbPipelineRegister.getResult();
+        }
+        DisplayProgram.addRead(name , value);
         return value;
     }
 
