@@ -5,7 +5,7 @@ import guc.vonneumann.exceptions.SimulatorSyntaxException;
 
 public class RAM {
 
-    private int[] memory;
+    final private int[] memory;
     private int instructionsSize;
     private int lastInstruction;
 
@@ -44,5 +44,8 @@ public class RAM {
         return memory[address];
     }
 
+    public int[] getMemory() {
+        return memory;
+    }
 
 }

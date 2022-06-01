@@ -1,6 +1,7 @@
 package guc.vonneumann.simulator;
 
 import guc.vonneumann.exceptions.SimulatorRuntimeException;
+import guc.vonneumann.view.DisplayProgram;
 
 public class CPU {
 
@@ -27,6 +28,7 @@ public class CPU {
     }
 
     public void runCycle() throws SimulatorRuntimeException {
+        DisplayProgram.addCycle();
         writeBack();
         memAccess();
         execute();
@@ -36,8 +38,8 @@ public class CPU {
 
     public boolean isDone() throws SimulatorRuntimeException {
         return (ifidPipelineRegister == null && idexPipelineRegister == null
-                && exmemPipelineRegister == null && memwbPipelineRegister == null
-                && Computer.getRam().getInstruction(pc) == 0);
+            && exmemPipelineRegister == null && memwbPipelineRegister == null
+            && Computer.getRam().getInstruction(pc) == 0);
     }
 
     public void fetch() throws SimulatorRuntimeException {
@@ -48,8 +50,11 @@ public class CPU {
         if (instruction == 0) {
             return;
         }
+        DisplayProgram.setPhase("IF");
+        DisplayProgram.addRead("PC", pc);
         ifidPipelineRegister = new IFIDPipelineRegister(pc, instruction);
         pc++;
+        DisplayProgram.addWrite("PC", pc - 1, pc);
     }
 
     public void decode() throws SimulatorRuntimeException {
@@ -60,14 +65,24 @@ public class CPU {
         if (instruction == null) {
             return;
         }
+        DisplayProgram.setPhase("ID");
+        DisplayProgram.addInitialValue("PC", ifidPipelineRegister.getPc());
+        DisplayProgram.addInitialValueHex("Ins", ifidPipelineRegister.getInstruction());
         idexPipelineRegister = decode(ifidPipelineRegister);
         ifidPipelineRegister = null;
     }
 
-    public void execute() {
+    public void execute() throws SimulatorRuntimeException {
         if (idexPipelineRegister == null) {
             return;
         }
+        DisplayProgram.setPhase("EX");
+        DisplayProgram.addInitialValue("PC", idexPipelineRegister.getPc());
+        DisplayProgram.addInitialValueOpCode(idexPipelineRegister.getOpCode());
+        DisplayProgram.addInitialValue("R2", idexPipelineRegister.getR2Value());
+        DisplayProgram.addInitialValue("R3", idexPipelineRegister.getR3Value());
+        DisplayProgram.addInitialValue("IMM", idexPipelineRegister.getImmediate());
+        DisplayProgram.addInitialValue("Dest", idexPipelineRegister.getDestinationRegister());
         int opCode = idexPipelineRegister.getOpCode();
         int pc = idexPipelineRegister.getPc();
         exmemPipelineRegister = new EXMEMPipelineRegister(pc);
@@ -145,6 +160,11 @@ public class CPU {
         if (clockCycles % 2 == 1 || exmemPipelineRegister == null) {
             return;
         }
+        DisplayProgram.setPhase("MEM");
+        DisplayProgram.addInitialValue("PC", exmemPipelineRegister.getPc());
+        DisplayProgram.addInitialValueHex("ADDR", exmemPipelineRegister.getAddress());
+        DisplayProgram.addInitialValue("Res", exmemPipelineRegister.getResult());
+        DisplayProgram.addInitialValue("Dest", exmemPipelineRegister.getDestinationRegister());
         if (exmemPipelineRegister.isReadMem()) {
             int value = Computer.readMemory(exmemPipelineRegister.getAddress());
             memwbPipelineRegister = new MEMWBPipelineRegister(exmemPipelineRegister.getPc());
@@ -165,6 +185,10 @@ public class CPU {
         if (memwbPipelineRegister == null) {
             return;
         }
+        DisplayProgram.setPhase("WB");
+        DisplayProgram.addInitialValue("PC", memwbPipelineRegister.getPc());
+        DisplayProgram.addInitialValue("Res", memwbPipelineRegister.getResult());
+        DisplayProgram.addInitialValue("Dest", memwbPipelineRegister.getDestinationRegister());
         writeRegister(memwbPipelineRegister.getDestinationRegister(), memwbPipelineRegister.getResult());
         memwbPipelineRegister = null;
     }
@@ -268,6 +292,7 @@ public class CPU {
     }
 
     public void setPc(int pc) {
+        DisplayProgram.addWrite("PC", this.pc, pc);
         this.pc = pc;
         ifidPipelineRegister = null;
         idexPipelineRegister = null;
@@ -276,6 +301,7 @@ public class CPU {
 
     public int readRegister(int index) {
         int value = registerFile[index];
+        DisplayProgram.addRead("R" + index, value);
         return value;
     }
 
@@ -284,6 +310,7 @@ public class CPU {
             setPc(value);
             return;
         }
+        DisplayProgram.addWrite("R" + index, registerFile[index], value);
         registerFile[index] = value;
     }
 }

@@ -32,6 +32,10 @@ public class CodeCompiler {
     public static void compileCode(String pathname) throws IOException, SimulatorSyntaxException {
         ArrayList<String> code = readCode(pathname);
         for (String c : code) {
+            c = c.trim();
+            if(c.length() == 0){
+                continue;
+            }
             compileLine(c);
         }
     }

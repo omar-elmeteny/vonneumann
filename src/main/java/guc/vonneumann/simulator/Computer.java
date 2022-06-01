@@ -1,6 +1,7 @@
 package guc.vonneumann.simulator;
 
 import guc.vonneumann.exceptions.SimulatorRuntimeException;
+import guc.vonneumann.view.DisplayProgram;
 
 public class Computer {
     
@@ -16,10 +17,12 @@ public class Computer {
     }
 
     public static int readMemory(int address) throws SimulatorRuntimeException{
+        DisplayProgram.addRead("MEM[" + address + "]", ram.readFromMemory(address));
         return ram.readFromMemory(address);
     }
 
     public static void writeMemory(int address, int value) throws SimulatorRuntimeException{
+        DisplayProgram.addWrite("MEM[" + address + "]", ram.readFromMemory(address), value);
         ram.writeToMemory(value, address);
     }
 }
