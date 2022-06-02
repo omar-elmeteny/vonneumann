@@ -16,7 +16,7 @@ in the same memory.
     - **one_plus_two.txt:** Adds 1 + 2 and stores the result in `R3`
     - **sum1-10.txt:** Sums the number from 1 to 10 and stores the result in `R1`
     - **table8.txt:** Multiples the numbers from 1 to 12 by 8 and store the results in address 2000 to 2011
-    - **text.txt** Tests the functionality of various instructions.
+    - **test.txt** Tests the functionality of various instructions.
 - The program output is stored as HTML file in the [output](./output/) folder
 
 ## Team
@@ -33,4 +33,3 @@ Team Number: **45**
 | Mohamed Kassem Nassar | 49-5437 | P20 |
 | Muhammed Hany | 49-4966 | P08 |
 | Amr Mohamed Samy | 49-6656 | P20 |
-
